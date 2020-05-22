@@ -17,6 +17,8 @@ link_directories(
   ${OMPL_LIB_DIR}
 )
 
+add_library(ompl_extension src/SE3StateSpaceAligned.cpp)
+
 add_executable(
   working
   working.cpp
@@ -24,5 +26,16 @@ add_executable(
 
 target_link_libraries(
   working
+  ompl
+  ompl_extension
+)
+
+add_executable(
+  sphere
+  sphere.cpp
+)
+
+target_link_libraries(
+  sphere
   ompl
 )

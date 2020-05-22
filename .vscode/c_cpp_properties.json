@@ -4,15 +4,17 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
-                "/home/jeroen/Applications/ompl/usr/local/include/ompl-1.5",
-                "/usr/include/eigen3"
+                "OMPL_INCLUDE_DIR /home/jeroen/Applications/ompl/usr/local/include/ompl-1.5",
+                "/usr/include/eigen3",
+                "/home/jeroen/Applications/ompl/usr/local/include/ompl-1.5"
             ],
             "defines": [],
             "compilerPath": "/usr/lib/ccache/clang",
             "cStandard": "c11",
             "cppStandard": "c++14",
             "intelliSenseMode": "clang-x64",
-            "configurationProvider": "ms-vscode.cmake-tools"
+            "compileCommands": "${workspaceFolder}/build/compile_commands.json",
+            "compilerArgs": []
         }
     ],
     "version": 4
