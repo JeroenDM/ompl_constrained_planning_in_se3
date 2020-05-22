@@ -10,6 +10,12 @@ fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 ax.scatter(data[:, 0], data[:, 1], data[:, 2])
 
+ax.set_xlim([-1, 1])
+ax.set_ylim([-1, 1])
+ax.set_zlim([-1, 1])
+
+# ax.scatter(0.5, 0.5, 0.5, "ro")
+ax.scatter(0, 0, 0, "ro")
 
 for pose in data:
     plot_reference_frame(ax, pose[:3], pose[3:])
