@@ -20,12 +20,12 @@ link_directories(
 add_library(ompl_extension src/SE3StateSpaceAligned.cpp)
 
 add_executable(
-  working
-  working.cpp
+  constrained_se3_planning
+  constrained_se3_planning.cpp
 )
 
 target_link_libraries(
-  working
+  constrained_se3_planning
   ompl
   ompl_extension
 )
