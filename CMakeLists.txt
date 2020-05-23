@@ -29,13 +29,3 @@ target_link_libraries(
   ompl
   ompl_extension
 )
-
-add_executable(
-  sphere
-  sphere.cpp
-)
-
-target_link_libraries(
-  sphere
-  ompl
-)
