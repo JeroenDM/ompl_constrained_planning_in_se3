@@ -14,10 +14,10 @@ namespace ompl
     namespace base
     {
 
-        class ImplicitChainSpace : public RealVectorStateSpace
+        class SE3StateSpaceAligned : public RealVectorStateSpace
         {
         public:
-            ImplicitChainSpace() : RealVectorStateSpace(7)
+            SE3StateSpaceAligned() : RealVectorStateSpace(7)
             {
                 type_ = STATE_SPACE_SE3;
                 VEC_DIM_ = 3; // TODO Hardcoded at the moment
@@ -33,11 +33,10 @@ namespace ompl
             std::size_t QUAT_DIM_; // Length of the tail of the vector representing quaternions
         };
 
-        class ImplicitChainSampler : public RealVectorStateSampler
+        class SE3StateSpaceAlignedSampler : public RealVectorStateSampler
         {
         public:
-            // ImplicitChainSampler(const StateSpace *space) : StateSampler(space)
-            ImplicitChainSampler(const StateSpace *space) : RealVectorStateSampler(space)
+            SE3StateSpaceAlignedSampler(const StateSpace *space) : RealVectorStateSampler(space)
             {
             }
             void sampleUniform(State *state) override;

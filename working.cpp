@@ -57,7 +57,7 @@ void planWithoutConstraints()
 {
 
     // auto space(std::make_shared<ob::RealVectorStateSpace>(7));
-    auto space(std::make_shared<ob::ImplicitChainSpace>());
+    auto space(std::make_shared<ob::SE3StateSpaceAligned>());
 
     ob::RealVectorBounds bounds(7);
     bounds.setLow(-1);
@@ -130,7 +130,7 @@ void planWithConstraints()
 {
 
     // auto space(std::make_shared<ob::RealVectorStateSpace>(7));
-    auto space(std::make_shared<ob::ImplicitChainSpace>());
+    auto space(std::make_shared<ob::SE3StateSpaceAligned>());
 
     ob::RealVectorBounds bounds(7);
     bounds.setLow(-2);

@@ -9,7 +9,7 @@ namespace ompl
 {
     namespace base
     {
-        void ImplicitChainSpace::enforceBounds(State *state) const
+        void SE3StateSpaceAligned::enforceBounds(State *state) const
         {
             auto *rstate = static_cast<StateType *>(state);
             // enforce bounds on vector part
@@ -32,12 +32,12 @@ namespace ompl
             rstate->values[VEC_DIM_ + 3] = qstate.w;
         }
 
-        ompl::base::StateSamplerPtr ImplicitChainSpace::allocDefaultStateSampler() const
+        ompl::base::StateSamplerPtr SE3StateSpaceAligned::allocDefaultStateSampler() const
         {
-            return std::make_shared<ImplicitChainSampler>(this);
+            return std::make_shared<SE3StateSpaceAlignedSampler>(this);
         }
 
-        double ImplicitChainSpace::distance(const ompl::base::State *state1, const ompl::base::State *state2) const
+        double SE3StateSpaceAligned::distance(const ompl::base::State *state1, const ompl::base::State *state2) const
         {
             double vec_dist = 0.0, quat_dist = 0.0;
             const double *s1 = static_cast<const StateType *>(state1)->values;
@@ -66,7 +66,7 @@ namespace ompl
             return vec_dist + quat_dist;
         }
 
-        void ImplicitChainSpace::interpolate(const ompl::base::State *from, const ompl::base::State *to, double t, ompl::base::State *state) const
+        void SE3StateSpaceAligned::interpolate(const ompl::base::State *from, const ompl::base::State *to, double t, ompl::base::State *state) const
         {
             const auto *rfrom = static_cast<const StateType *>(from);
             const auto *rto = static_cast<const StateType *>(to);
@@ -85,11 +85,11 @@ namespace ompl
             rstate->values[VEC_DIM_ + 3] = qResult.w;
         }
 
-        void ImplicitChainSampler::sampleUniform(ompl::base::State *state)
+        void SE3StateSpaceAlignedSampler::sampleUniform(ompl::base::State *state)
         {
-            const ompl::base::RealVectorBounds &bounds = static_cast<const ImplicitChainSpace *>(space_)->getBounds();
+            const ompl::base::RealVectorBounds &bounds = static_cast<const SE3StateSpaceAligned *>(space_)->getBounds();
 
-            auto *rstate = static_cast<ImplicitChainSpace::StateType *>(state);
+            auto *rstate = static_cast<SE3StateSpaceAligned::StateType *>(state);
             //auto *rstate = static_cast<ompl::base::RealVectorStateSpace::StateType *>(state);
 
             // sample vector part
@@ -99,9 +99,9 @@ namespace ompl
             rng_.quaternion(&rstate->values[3]);
         }
 
-        void ImplicitChainSampler::sampleUniformNear(ompl::base::State *state, const ompl::base::State *near, double distance)
+        void SE3StateSpaceAlignedSampler::sampleUniformNear(ompl::base::State *state, const ompl::base::State *near, double distance)
         {
-            const ompl::base::RealVectorBounds &bounds = static_cast<const ImplicitChainSpace *>(space_)->getBounds();
+            const ompl::base::RealVectorBounds &bounds = static_cast<const SE3StateSpaceAligned *>(space_)->getBounds();
             auto *rstate = static_cast<ompl::base::RealVectorStateSpace::StateType *>(state);
             const auto *rnear = static_cast<const ompl::base::RealVectorStateSpace::StateType *>(near);
 
