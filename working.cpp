@@ -1,3 +1,11 @@
+/** OMPL Constrained planning in SE3
+ * 
+ * This example shows how to alternative SE3 state space
+ * with position and orientation stored in aligned memory.
+ * 
+ * Now we can extend the example of planning on a sphere to SE3,
+ * instead of using only the position (with RealVectorStateSpace).
+ * */
 #include <iostream>
 #include <fstream>
 
@@ -17,33 +25,12 @@
 namespace ob = ompl::base;
 namespace og = ompl::geometric;
 
-bool isStateValid(const ob::State *state)
-{
-    // const auto *vec = state->as<ob::RealVectorStateSpace::StateType>();
-    // auto v = Eigen::Map<Eigen::VectorXd>(vec->values, 7);
-
-    // Eigen::Vector3d point;
-    // point << 0, 0, 0;
-
-    // if ((v.head(3) - point).norm() < 0.5)
-    // {
-    //     return false;
-    // }
-    return true;
-}
-
+/** Obstacle from the constrained planning tutorial
+ *  https://ompl.kavrakilab.org/constrainedPlanningTutorial.html
+ * */
 bool obstacle(const ob::State *state)
 {
-    // As ob::ConstrainedStateSpace::StateType inherits from
-    // Eigen::Map<Eigen::VectorXd>, we can grab a reference to it for some easier
-    // state access.
     const Eigen::Map<Eigen::VectorXd> &x = *state->as<ob::ConstrainedStateSpace::StateType>();
-    // Alternatively, we could access the underlying real vector state with the
-    // following incantation:
-    //   auto x = state->as<ob::ConstrainedStateSpace::StateType>()->getState()->as<ob::RealVectorStateSpace::StateType>();
-    // Note the use of "getState()" on the constrained state. This accesss the
-    // underlying state that was allocated by the ambient state space.
-    // Define a narrow band obstacle with a small hole on one side.
     if (-0.1 < x[2] && x[2] < 0.1)
     {
         if (-0.05 < x[0] && x[0] < 0.05)
@@ -53,91 +40,47 @@ bool obstacle(const ob::State *state)
     return true;
 }
 
-void planWithoutConstraints()
-{
-
-    // auto space(std::make_shared<ob::RealVectorStateSpace>(7));
-    auto space(std::make_shared<ob::SE3StateSpaceAligned>());
-
-    ob::RealVectorBounds bounds(7);
-    bounds.setLow(-1);
-    bounds.setHigh(1);
-    space->setBounds(bounds);
-
-     // define a simple setup class
-    og::SimpleSetup ss(space);
-
-    // set state validity checking for this space
-    ss.setStateValidityChecker(isStateValid);
-
-    ob::ScopedState<> start(space);
-    // start.random();
-    start = {1, 0, 0, 0, 0, 0, 1};
-    ob::ScopedState<> goal(space);
-    // goal.random();
-    goal = {-1, 0, 0, 0, 0, 0, 1};
-    ss.setStartAndGoalStates(start, goal);
-
-
-    ss.setup();
-    ss.print();
-    ob::PlannerStatus solved = ss.solve(1.0);
-    if (solved)
-    {
-        std::cout << "Found solution:" << std::endl;
-        // print the path to screen
-        ss.simplifySolution();
-        auto path = ss.getSolutionPath();
-        path.interpolate();
-
-        std::ofstream file;
-        file.open("path_se3.txt");
-        path.printAsMatrix(file);
-        file.close();
-    }
-    else
-        std::cout << "No solution found" << std::endl;
-
-}
-
-class Sphere : public ob::Constraint
+/** Constraints from the constrained planning tutorial
+ *  https://ompl.kavrakilab.org/constrainedPlanningTutorial.html
+ * 
+ * But with two extra constraints: fix rotation around x and y axis.
+ * Only z rotation allowed.
+ * 
+ * Analytical Jacobian not added, the default numerical one works just fine
+ * for this simple example.
+ * */
+class SphereAndZRotation : public ob::Constraint
 {
 public:
-    Sphere() : ob::Constraint(7, 1)
+    SphereAndZRotation() : ob::Constraint(7, 3)
     {
     }
 
-    void function(const Eigen::Ref<const Eigen::VectorXd> &x, Eigen::Ref<Eigen::VectorXd> out) const override;
-    // void jacobian(const Eigen::Ref<const Eigen::VectorXd> &x, Eigen::Ref<Eigen::MatrixXd> out) const override;
+    void function(const Eigen::Ref<const Eigen::VectorXd> &x, Eigen::Ref<Eigen::VectorXd> out) const override
+    {
+        // position constrained to sphere with radius 1
+        out[0] = x.head(3).norm() - 1;
+
+        // only rotation around z-axis allowed
+        out[1] = x[3];
+        out[2] = x[4];
+    }
 };
-
-void Sphere::function(const Eigen::Ref<const Eigen::VectorXd> &x, Eigen::Ref<Eigen::VectorXd> out) const
-{
-    // The function that defines a sphere is f(q) = || q || - 1, as discussed
-    // above. Eigen makes this easy to express:
-    out[0] = x.head(3).norm() - 1;
-}
-
-// void Sphere::jacobian(const Eigen::Ref<const Eigen::VectorXd> &x, Eigen::Ref<Eigen::MatrixXd> out) const
-// {
-//     out.head(3) = x.head(3).transpose().normalized();
-//     // out[3] = 0.0;
-//     // out[4] = 0.0;
-//     // out[5] = 0.0;
-// }
 
 void planWithConstraints()
 {
 
-    // auto space(std::make_shared<ob::RealVectorStateSpace>(7));
+    // the space is based on ob::RealVectorStateSpace>(7)
     auto space(std::make_shared<ob::SE3StateSpaceAligned>());
 
+    // the bounds on the quaternion part are not used (at least that I know of)
+    // the quaterion is normalized when bounds are enforced
     ob::RealVectorBounds bounds(7);
     bounds.setLow(-2);
     bounds.setHigh(2);
     space->setBounds(bounds);
 
-    auto constraint = std::make_shared<Sphere>();
+    auto constraint = std::make_shared<SphereAndZRotation>();
 
     // problem setup stuff
     auto css = std::make_shared<ob::ProjectedStateSpace>(space, constraint);
@@ -146,10 +89,10 @@ void planWithConstraints()
     auto pp = std::make_shared<og::PRM>(csi);
     ss->setPlanner(pp);
 
-    // add the obstacles, the implemetation also uses casting of a state
+    // Add the obstacles, the implemetation also uses casting of a state
     // to a real vector state space in this case
     // I could cast to an eigen position and quaternion -> eigen transform
-    // for collision checking
+    // for collision checking in the future for more interesting examples
     ss->setStateValidityChecker(obstacle);
 
     // problem specific admin
@@ -172,69 +115,20 @@ void planWithConstraints()
         auto path = ss->getSolutionPath();
         path.interpolate();
 
+        // write the interpolated path to a file for visualization (using Python)
         std::ofstream file;
         file.open("path_se3.txt");
         path.printAsMatrix(file);
         file.close();
     }
     else
-        OMPL_WARN("No solution found!");
-    
-}
-
-void planWithSimpleSetup()
-{
-    // construct the state space we are planning in
-    auto space(std::make_shared<ob::SE3StateSpace>());
-
-    // set the bounds for the R^3 part of SE(3)
-    ob::RealVectorBounds bounds(3);
-    bounds.setLow(-1);
-    bounds.setHigh(1);
-
-    space->setBounds(bounds);
-
-    // define a simple setup class
-    og::SimpleSetup ss(space);
-
-    // set state validity checking for this space
-    ss.setStateValidityChecker(isStateValid);
-
-    // create a random start state
-    ob::ScopedState<> start(space);
-    start.random();
-    ob::ScopedState<> goal(space);
-    goal.random();
-    ss.setStartAndGoalStates(start, goal);
-
-
-    ss.setup();
-    ss.print();
-    ob::PlannerStatus solved = ss.solve(1.0);
-    if (solved)
     {
-        std::cout << "Found solution:" << std::endl;
-        // print the path to screen
-        ss.simplifySolution();
-        auto path = ss.getSolutionPath();
-        path.interpolate();
-
-        std::ofstream file;
-        file.open("path_se3.txt");
-        path.printAsMatrix(file);
-        file.close();
+        OMPL_WARN("No solution found!");
     }
-    else
-        std::cout << "No solution found" << std::endl;
 }
 
 int main(int /*argc*/, char ** /*argv*/)
 {
-    std::cout << "OMPL version: " << OMPL_VERSION << std::endl;
-
-    // planWithSimpleSetup();
-    // planWithoutConstraints();
     planWithConstraints();
-
     return 0;
 }
