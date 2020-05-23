@@ -35,3 +35,17 @@ def plot_reference_frame(ax, p, q, l=0.2):
     ax.plot(x_axis[0], x_axis[1], x_axis[2], '-', c='r')
     ax.plot(y_axis[0], y_axis[1], y_axis[2], '-', c='g')
     ax.plot(z_axis[0], z_axis[1], z_axis[2], '-', c='b')
+
+
+def plot_unit_sphere(ax):
+    """
+    from  https://stackoverflow.com/questions/32424670/python-matplotlib-drawing-3d-sphere-with-circumferences
+    """
+    u = np.linspace(0, 2 * np.pi, 100)
+    v = np.linspace(0, np.pi, 100)
+
+    x = 1 * np.outer(np.cos(u), np.sin(v))
+    y = 1 * np.outer(np.sin(u), np.sin(v))
+    z = 1 * np.outer(np.ones(np.size(u)), np.cos(v))
+
+    ax.plot_surface(x, y, z,  rstride=4, cstride=4, color='y', linewidth=0, alpha=0.2)
