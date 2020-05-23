@@ -27,4 +27,6 @@ ax.zaxis.pane.fill = False
 
 ax.set_title("Constrained SE3 plannig on sphere", fontsize=20)
 
+# fig.savefig("constrained_planning_se3.png")
+
 plt.show()
