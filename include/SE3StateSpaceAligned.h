@@ -5,6 +5,8 @@
  * This implementation uses a RealVectorStateSpace as base class,
  * intead of using a compound state space of a position and orientation.
  * This is a requirement to use the state space in constrained planning problems.
+ * 
+ * Most of the magic happends in the Sampler: SE3StateSpaceAlignedSampler
  **/
 
 #include <ompl/base/spaces/RealVectorStateSpace.h>
@@ -41,6 +43,7 @@ namespace ompl
             }
             void sampleUniform(State *state) override;
             void sampleUniformNear(State *state, const State *near, double distance) override;
+            // TODO Gaussian sampling
             //void sampleGaussian(State *state, const State *mean, double stdDev) override;
         };
 
