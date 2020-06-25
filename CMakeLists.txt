@@ -29,3 +29,14 @@ target_link_libraries(
   ompl
   ompl_extension
 )
+
+add_executable(
+  constraint_intersection
+  constraint_intersection_on_se3.cpp
+)
+
+target_link_libraries(
+  constraint_intersection
+  ompl
+  ompl_extension
+)
